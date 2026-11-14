@@ -36,7 +36,6 @@ export const PRE_TRIP_NOTES: string[] = [
 /* 出發前待辦（資料第六、十章）。改了內容記得把 trip.config.ts 的 seedVersion 往上加 */
 export const TODO_LIST: ChecklistItem[] = [
   // ── 高優先 ──
-  { id: 'todo_3', text: '確認兩支手機支援 eSIM、效期從安裝還是連網開始算' },
   { id: 'todo_4', text: '安裝或保存 eSIM 啟用資訊' },
   { id: 'todo_5', text: '預約 11/20 19:30 新宿壽喜燒（すき焼き 伊吹，2 人）' },
   { id: 'todo_6', text: '預約 11/21 約 19:00 WAGYU SUKIYAKI 極（2 人）' },
