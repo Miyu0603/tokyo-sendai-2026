@@ -1,0 +1,10 @@
+{
+  "_說明": "複製這個資料夾成 private/（已在 .gitignore），填入住宿真實名稱與地址。trip.data.ts 裡只寫代稱；npm run build:docx 產生 Word 時才換回真名。App 和 repo 裡永遠只有代稱。",
+  "replacements": [
+    ["京都 飯店訂房", "（飯店真名） 訂房"],
+    ["京都 飯店", "（飯店真名）"]
+  ],
+  "addresses": {
+    "（飯店真名）": "（飯店地址）"
+  }
+}

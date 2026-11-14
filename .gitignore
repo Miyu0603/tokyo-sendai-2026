@@ -1,0 +1,26 @@
+# 環境變數（記帳網址等）：只放本機與 GitHub secrets
+.env
+.env.*
+!.env.example
+
+node_modules
+dist
+*.tsbuildinfo
+
+# 系統與編輯器
+.DS_Store
+.vscode/
+.idea/
+*.pem
+*.key
+
+# ── 個資：repo 可能是公開的，這些一律不進版控 ──
+# 住宿真實名稱與地址
+private/
+# 由 build:docx 產生的 Word 行程表（含住宿真名）與它的備份
+行程表-*.docx
+*.舊版備份.docx
+# 任何行程的匯出、草稿、設計稿：常常內嵌整份行程資料
+行程表-*.md
+*-export.*
+design_handoff_*/
