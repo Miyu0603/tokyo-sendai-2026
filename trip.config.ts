@@ -67,5 +67,5 @@ export const TRIP: TripConfig = {
   },
   timezone: 'Asia/Tokyo',
   sheetName: '2026東京仙台',
-  seedVersion: '1',
+  seedVersion: '2',
 };

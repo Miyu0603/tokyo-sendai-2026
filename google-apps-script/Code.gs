@@ -2,14 +2,15 @@
  * 記帳後端（trip-kit）
  *
  * ── 安裝（每趟旅行一次）──
- * 1. 開一份新的 Google 試算表，把第一個分頁改名成 trip.config.ts 的 sheetName。
- * 2. 「擴充功能 → Apps Script」開啟（這樣才是容器繫結指令碼，
+ * 1. 準備一個「完全空白」的分頁，名稱和 trip.config.ts 的 sheetName 一樣
+ *    （或另外設 VITE_GOOGLE_SHEET_NAME）。可以是新試算表，也可以是現有試算表裡新增的分頁。
+ *    不要沿用舊行程的分頁——欄位順序對不上，帳會寫進錯的欄位。
+ * 2. 從那份試算表「擴充功能 → Apps Script」開啟（這樣才是容器繫結指令碼，
  *    SpreadsheetApp.getActiveSpreadsheet() 才抓得到這份檔案），把本檔整份貼進去。
- * 3. 上方函式選單選 setupSheet → 執行一次，會寫好標題列與欄位名。
- *    不要拿舊行程的試算表來複製——欄位順序對不上，帳會寫進錯的欄位。
- * 4. 「專案設定 → 指令碼屬性」新增 APP_KEY（自己想一組密鑰）。
- * 5. 「部署 → 新增部署作業 → 網頁應用程式」：執行身分「我」、誰可以存取「所有人」。
+ * 3. 「專案設定 → 指令碼屬性」新增 APP_KEY（自己想一組密鑰）。
+ * 4. 「部署 → 新增部署作業 → 網頁應用程式」：執行身分「我」、誰可以存取「所有人」。
  *    拿到的 /exec 網址放進 GitHub secrets 的 VITE_GOOGLE_SCRIPT_URL。
+ * 表頭不用手動建：App 第一次讀寫記帳時，會在指定的分頁自動寫好（只在分頁完全空白時）。
  *
  * ── 為什麼要 APP_KEY ──
  * 部署權限是「所有人」，而 /exec 網址一定會出現在公開網站的 JS 裡，
@@ -57,18 +58,16 @@ var FIRST_DATA_ROW = 3;
 var LAST_COL = HEADERS.length;
 
 /**
- * 在目前的分頁寫好標題列與欄位名。從 Apps Script 編輯器手動執行一次。
- * 分頁裡已經有東西就拒絕，不覆蓋任何資料。
+ * 分頁完全空白時，寫好標題列與欄位名。
+ * 由 App 的讀寫請求觸發，用的是 App 指定的分頁名稱——
+ * 以前改成在編輯器手動執行，但那時「作用中的分頁」通常是第一個分頁，不一定是要用的那個。
+ * 分頁裡只要有任何內容就不動，不會覆蓋資料。
  */
-function setupSheet() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  if (sheet.getLastRow() > 0) {
-    throw new Error('分頁「' + sheet.getName() + '」已經有內容，為了不覆蓋資料，請在空白分頁執行。');
-  }
+function ensureHeaders_(sheet) {
+  if (sheet.getLastRow() > 0) return;
   sheet.getRange(TITLE_ROW, 1).setValue('旅費記帳').setFontWeight('bold').setFontSize(14);
   sheet.getRange(HEADER_ROW, 1, 1, LAST_COL).setValues([HEADERS]).setFontWeight('bold').setBackground('#F2ECE1');
   sheet.setFrozenRows(HEADER_ROW);
-  Logger.log('已在「' + sheet.getName() + '」建立表頭。分頁名稱要和 trip.config.ts 的 sheetName 一致。');
 }
 
 /**
@@ -126,6 +125,7 @@ function doGet(e) {
     var params = (e && e.parameter) || {};
     if (!checkAuth_(params.key)) return json_({ error: 'unauthorized' });
     var sheet = getSheet_(params.sheetName);
+    ensureHeaders_(sheet);
 
     if (params.action === 'inspect') {
       var peek = sheet.getRange(1, 1, Math.min(3, sheet.getLastRow() || 1), LAST_COL).getDisplayValues();
@@ -167,6 +167,7 @@ function doPost(e) {
     var body = JSON.parse(e.postData.contents);
     if (!checkAuth_(body.key)) return json_({ error: 'unauthorized' });
     var sheet = getSheet_(body.sheetName);
+    ensureHeaders_(sheet);
 
     if (body.action === 'delete') {
       sheet.deleteRow(rowIndexOrThrow_(body.rowIndex));

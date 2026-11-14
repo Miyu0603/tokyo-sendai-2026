@@ -37,10 +37,14 @@ function makeSheet(name) {
   return sheet;
 }
 
+// 第一個分頁故意放別的內容：確認程式只動 App 指定的那個分頁
+const otherSheet = makeSheet('其他用途');
+otherSheet.getRange(1, 1).setValue('自己的筆記');
 const sheet = makeSheet('範例行程');
+const sheets = [otherSheet, sheet];
 let appKey = null;
 const ctx = {
-  SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: n => (n === '範例行程' ? sheet : null), getSheets: () => [sheet], getActiveSheet: () => sheet }) },
+  SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: n => sheets.find(s => s.getName() === n) || null, getSheets: () => sheets, getActiveSheet: () => sheets[0] }) },
   PropertiesService: { getScriptProperties: () => ({ getProperty: k => (k === 'APP_KEY' ? appKey : null) }) },
   ContentService: { createTextOutput: s => ({ setMimeType() { return JSON.parse(s); } }), MimeType: { JSON: 'json' } },
   LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
@@ -57,12 +61,12 @@ const S = { sheetName: '範例行程' };
 let pass = 0, fail = 0;
 const check = (label, cond, extra = '') => { cond ? pass++ : fail++; console.log(`${cond ? '✓' : '✗'} ${label}${extra ? '  ' + extra : ''}`); };
 
-// 空表
-ctx.setupSheet();
-check('setupSheet 寫入表頭（11 欄）', sheet._rows[1].length === 11 && sheet._rows[1][0] === '時間');
-let threw = false; try { ctx.setupSheet(); } catch (e) { threw = true; }
-check('setupSheet 在非空分頁拒絕執行（不覆蓋）', threw);
-check('空表讀取回傳 data: []', JSON.stringify(get(S)) === '{"data":[]}');
+// 空分頁：第一次讀取自動寫表頭
+check('空分頁第一次讀取回傳 data: []', JSON.stringify(get(S)) === '{"data":[]}');
+check('並且在指定的分頁寫好表頭（11 欄）', sheet._rows[1] && sheet._rows[1].length === 11 && sheet._rows[1][0] === '時間');
+check('其他分頁完全沒被動到', otherSheet._rows.length === 1 && otherSheet._rows[0][0] === '自己的筆記');
+get(S);
+check('再讀一次不會重寫表頭', sheet._rows.length === 2);
 
 // 新增兩筆
 const rec = { date: '2027/04/01', item: '拉麵', payer: '旅伴A', amountHome: 0, amountLocal: 2000, note: '', splitType: 'equal', splitAHome: 0, splitALocal: 1000, splitBHome: 0, splitBLocal: 1000 };

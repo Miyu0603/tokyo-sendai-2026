@@ -54,9 +54,9 @@ npm run check
 
 ### 4. 記帳後端（Google 試算表）
 
-照 [`google-apps-script/README.md`](google-apps-script/README.md) 做，大約 5 分鐘：開新試算表 → 貼上 `Code.gs` → 執行 `setupSheet` → 設定 `APP_KEY` → 部署拿到 `/exec` 網址。
+照 [`google-apps-script/README.md`](google-apps-script/README.md) 做，大約 5 分鐘：準備空白分頁 → 貼上 `Code.gs` → 設定 `APP_KEY` → 部署拿到 `/exec` 網址。表頭會在第一次用記帳時自動建好。
 
-**每趟都開新的試算表。** 不要複製上一趟的：欄位順序可能對不上，帳會寫進錯的欄位。
+**每趟都用新的空白分頁。** 不要沿用上一趟的分頁：欄位順序可能對不上，帳會寫進錯的欄位。
 
 ### 5. 部署
 
